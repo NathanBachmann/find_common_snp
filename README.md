@@ -6,5 +6,5 @@ Description: Finds all SNPs in common with genomes that have a specific trait
 and absent in genomes without the trait. Requires a trait matrix in tab-delimited format
 and a directory of vcf files
 
-USAGE:
-perl find_common_snps.pl "trait matrix" "directory of vcf files"
+USAGE:<br>
+<code>perl find_common_snps.pl "trait matrix" "directory of vcf files"</code>
