@@ -11,11 +11,12 @@ USAGE:<br>
 <code>perl find_common_snps.pl <trait matrix> <directory of vcf files> [options] </code>
 
 Input:
-<trait matrix> = trait matrix must be in tab-delimitated format
-<directory of vcf files> = path to a directory of vcf files
+
+trait_matrix = trait matrix must be in tab-delimitated format
+directory of vcf files = path to a directory of vcf files
 
 Options:
+
  -u {upper cutoff}: The minimum percentage of genomes in trait 1 that must have shared SNP {default: 0.8}
  -l {lower cutoff}: the maximum percentage of genomes in trait 2 that can have SNP found in trait1 {default: 0.2}
 
-USAGE
