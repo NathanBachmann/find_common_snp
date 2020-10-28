@@ -8,9 +8,15 @@ my $usage = <<'USAGE';
 
 USAGE:
 
-find_common_snps.pl <trait matrix> <directory of vcf files>
+find_common_snps.pl <trait matrix> <directory of vcf files> [options]
 
-trait matrix must be in tab-delimitated format
+Input:
+<trait matrix> = trait matrix must be in tab-delimitated format
+<directory of vcf files> = path to a directory of vcf files
+
+Options:
+ -u {upper cutoff}: The minimum percentage of genomes in trait 1 that must have shared SNP {default: 0.8}
+ -l {lower cutoff}: the maximum percentage of genomes in trait 2 that can have SNP found in trait1 {default: 0.2}
 
 USAGE
 
@@ -41,6 +47,9 @@ my %total1;
 my %total2;
 my $trait2cut;
 my $traint2cut2;
+my $upper;
+my $lower;
+my $i;
 
 #print the usage if no files are entered
 unless (defined ($ARGV[0]))
@@ -49,11 +58,36 @@ unless (defined ($ARGV[0]))
 	exit;
 }
 
-#main code
+#record the input files
 my $input = $ARGV[0];
 my $path = $ARGV[1];
-
 chomp $path;
+
+#parser the options
+for ($i=0; $i < scalar(@ARGV); $i++)
+{
+	if ($ARGV[$i] =~ /-u/ && defined($ARGV[$i+1]))
+	{
+		$upper = $ARGV[$i+1];
+	}
+	elsif ($ARGV[$i] =~ /-l/ && defined($ARGV[$i+1]))
+	{
+		$lower = $ARGV[$i+1];
+	}
+}
+
+#set for the default options
+unless (defined($upper))
+{
+	$upper = "0.8";
+}
+
+unless (defined($lower))
+{
+	$lower = "0.2";
+}
+
+print "Options: $upper\t$lower\n";
 
 open (IN, "$input") or die "Couldn't open $input\n";
 
@@ -97,18 +131,22 @@ my $count2 = scalar(@list2);
 print "There are $count2 with trait 2\n";
 print LOG "There are $count2 with trait 2\n";
 
-
 # calculate the 80% cutoff for trait 1
-$cutoff1 = $count*0.8;
+#$cutoff1 = $count*0.8;
+$cutoff1 = $count*$upper;
 
 # calculate the 20% cutoff for trait 2
-$cutoff2 = $count2*0.2;
+#$cutoff2 = $count2*0.2;
+$cutoff2 = $count2*$lower;
 
 # calculate the 80% cutoff for trait 2 and 20% cutoff for trait 1
-$trait2cut = $count2*0.8;
-$traint2cut2 = $count*0.2;
+#$trait2cut = $count2*0.8;
+#$traint2cut2 = $count*0.2;
+$trait2cut = $count2*$upper;
+$traint2cut2 = $count*$lower;
 
-print LOG "trait 1 cutoff is $cutoff1 and trait 2 cutoff is $cutoff2\n";
+
+print "trait 1 cutoff is $cutoff1 and trait 2 cutoff is $cutoff2\n";
 
 #print "$path\n";
 print "Reading VCF files for trait 1\n";
@@ -275,11 +313,11 @@ foreach my $key (sort keys %hash)
 	#print LOG "this is total match check: $key\t $total2{$key}\n";
 	@element2 = split(/\t/,$hash{$key});
 	$number = scalar(@element2);
-	if ($number > $cutoff1) # print out trait1 SNPs that are found > cutoff "trait 1" genomes. 
+	if ($number >= $cutoff1) # print out trait1 SNPs that are found > cutoff "trait 1" genomes. 
 	{
 		if (exists $trait2{$key})
 		{
-			if ($total2{$key} < $cutoff2)
+			if ($total2{$key} <= $cutoff2)
 			{
 				print OUT3 "$key\t$number\t$total2{$key}\t$hash{$key}\n";
 			}
@@ -310,11 +348,11 @@ foreach my $key2 (sort keys %trait2)
 	#print "this is total check: $key2\t$total2{$key2}\n";
 	@element4 = split(/\t/, $trait2{$key2});
 	$number2 = scalar(@element4);
-	if ($number2 > $trait2cut)
+	if ($number2 >= $trait2cut)
 	{
 		if (exists $hash{$key2})
 		{
-			if ($total1{$key2} < $traint2cut2)
+			if ($total1{$key2} <= $traint2cut2)
 			{
 				print OUT4 "$key2\t$number\t$total1{$key2}\t$trait2{$key2}\n";
 			}
